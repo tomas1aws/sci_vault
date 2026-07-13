@@ -1,6 +1,19 @@
 ---
-import Base from '../../../layouts/Base.astro'; import NodeList from '../../../components/NodeList.astro'; import { getVisibleNodes } from '../../../lib/content'; import { typeLabels } from '../../../lib/taxonomy';
-const nodesAll=await getVisibleNodes(); export function getStaticPaths(){return Object.keys(typeLabels).map(type=>({params:{type}}));}
-const { type }=Astro.params; const nodes=nodesAll.filter(n=>n.data.type===type);
+import Base from '../../../layouts/Base.astro';
+import NodeList from '../../../components/NodeList.astro';
+import { getVisibleNodes } from '../../../lib/content';
+import { typeLabels } from '../../../lib/taxonomy';
+
+export async function getStaticPaths() {
+  const nodesAll = await getVisibleNodes();
+
+  return Object.keys(typeLabels).map((type) => ({
+    params: { type },
+    props: { nodes: nodesAll.filter((node) => node.data.type === type) },
+  }));
+}
+
+const { type } = Astro.params;
+const { nodes } = Astro.props;
 ---
 <Base title={`${typeLabels[type]} · SciFi Vault`}><p class="kicker">Tipo</p><h1>{typeLabels[type]}</h1><NodeList nodes={nodes}/></Base>

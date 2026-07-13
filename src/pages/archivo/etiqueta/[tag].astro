@@ -1,6 +1,19 @@
 ---
-import Base from '../../../layouts/Base.astro'; import NodeList from '../../../components/NodeList.astro'; import { getVisibleNodes } from '../../../lib/content';
-const all=await getVisibleNodes(); export function getStaticPaths(){return [...new Set(all.flatMap(n=>n.data.tags))].map(tag=>({params:{tag}}));}
-const { tag }=Astro.params; const nodes=all.filter(n=>n.data.tags.includes(tag));
+import Base from '../../../layouts/Base.astro';
+import NodeList from '../../../components/NodeList.astro';
+import { getVisibleNodes } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const all = await getVisibleNodes();
+  const tags = [...new Set(all.flatMap((node) => node.data.tags))];
+
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { nodes: all.filter((node) => node.data.tags.includes(tag)) },
+  }));
+}
+
+const { tag } = Astro.params;
+const { nodes } = Astro.props;
 ---
 <Base title={`Etiqueta ${tag} · SciFi Vault`}><p class="kicker">Etiqueta</p><h1>#{tag}</h1><NodeList nodes={nodes}/></Base>
