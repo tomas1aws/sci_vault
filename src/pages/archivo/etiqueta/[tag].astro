@@ -7,10 +7,10 @@ export async function getStaticPaths() {
   const all = await getVisibleNodes();
   const tags = [...new Set(all.flatMap((node) => node.data.tags))];
 
-  return tags.map((tag) => ({
+  return Promise.all(tags.map(async (tag) => ({
     params: { tag },
     props: { nodes: await getNodesByTag(tag, all) },
-  }));
+  })));
 }
 
 const { tag } = Astro.params;
