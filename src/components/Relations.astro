@@ -1,0 +1,5 @@
+---
+import { nodeUrl, typeLabels } from '../lib/taxonomy';
+const { explicit=[], suggested=[] } = Astro.props;
+---
+<section aria-labelledby="rel-title"><h2 id="rel-title">Nodos relacionados</h2>{explicit.length ? <h3 class="kicker">Relaciones explícitas</h3> : null}{explicit.map((n:any)=><a class="relation" href={nodeUrl(n.data.slug)}>{n.data.title}<small>{typeLabels[n.data.type]} · relación declarada</small></a>)}{suggested.length ? <h3 class="kicker">Conexiones sugeridas</h3> : null}{suggested.map((n:any)=><a class="relation" href={nodeUrl(n.data.slug)}>{n.data.title}<small>{n.data.tags.slice(0,3).join(' · ')} · etiquetas compartidas</small></a>)}</section>

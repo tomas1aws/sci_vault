@@ -1,0 +1,5 @@
+---
+import Base from '../layouts/Base.astro'; import { getVisibleNodes } from '../lib/content'; import { nodeUrl, typeLabels } from '../lib/taxonomy';
+const data=(await getVisibleNodes()).map(n=>({title:n.data.title,slug:n.data.slug,type:typeLabels[n.data.type],description:n.data.description,tags:n.data.tags,aliases:n.data.aliases||[]}));
+---
+<Base title="Buscar · SciFi Vault"><h1>Buscador local</h1><div class="search"><label for="q" class="kicker">Buscar en títulos, alias, descripción, etiquetas y tipo</label><input id="q" type="search" autocomplete="off"></div><ul id="results" class="index-list"></ul><script define:vars={{data,nodeUrl}}>const q=document.getElementById('q'),r=document.getElementById('results');function draw(){const term=q.value.toLowerCase().trim();const items=!term?data:data.filter(n=>[n.title,n.type,n.description,...n.tags,...n.aliases].join(' ').toLowerCase().includes(term));r.innerHTML=items.map(n=>`<li><div><a class="node-title" href="${nodeUrl(n.slug)}">${n.title}</a><p>${n.description}</p><div class="meta">${n.type} · ${n.tags.join(' · ')}</div></div></li>`).join('')}q.addEventListener('input',draw);draw();</script></Base>

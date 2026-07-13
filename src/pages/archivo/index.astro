@@ -1,0 +1,5 @@
+---
+import Base from '../../layouts/Base.astro'; import NodeList from '../../components/NodeList.astro'; import { getVisibleNodes } from '../../lib/content';
+const nodes = await getVisibleNodes(); const tags=[...new Set(nodes.flatMap(n=>n.data.tags))].sort(); const years=[...new Set(nodes.map(n=>n.data.year).filter(Boolean))].sort();
+---
+<Base title="Archivo completo · SciFi Vault"><p class="kicker">Índice general</p><h1>Archivo completo</h1><p class="prose">Explorá por título, tipo, sección, etiqueta o año. El orden alfabético evita convertir el archivo en una cronología.</p><NodeList nodes={nodes}/><h2>Etiquetas</h2><div class="tags">{tags.map(t=><a class="tag" href={`/archivo/etiqueta/${t}`}>{t}</a>)}</div><h2>Años registrados</h2><p class="meta">{years.join(' · ')}</p></Base>

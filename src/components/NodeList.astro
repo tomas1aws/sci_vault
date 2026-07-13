@@ -1,0 +1,5 @@
+---
+import { archiveCode, nodeUrl, sectionForType, typeLabels } from '../lib/taxonomy';
+const { nodes } = Astro.props;
+---
+<ul class="index-list">{nodes.map((node:any) => <li><div><a class="node-title" href={nodeUrl(node.data.slug)}>{node.data.title}</a><p>{node.data.description}</p><div class="meta">{typeLabels[node.data.type]} · {sectionForType(node.data.type)}{node.data.year ? ` · ${node.data.year}` : ''}{node.data.status==='draft' ? ' · BORRADOR' : ''}</div></div><span class="code">{archiveCode(node)}</span></li>)}</ul>
