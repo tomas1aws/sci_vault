@@ -15,6 +15,7 @@ const nodes = defineCollection({
     tags: z.array(z.string()).default([]),
     relatedNodes: z.array(z.string()).default([]),
     aliases: z.array(z.string()).optional(),
+    featured: z.boolean().default(false),
     status: z.enum(['draft', 'published']),
     spoilerLevel: z.string().optional(),
     createdAt: z.coerce.date(),

@@ -1,16 +1,16 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import NodeList from '../../../components/NodeList.astro';
-import { getVisibleNodes } from '../../../lib/content';
+import { getNodesByTag, getVisibleNodes } from '../../../lib/content';
 
 export async function getStaticPaths() {
   const all = await getVisibleNodes();
   const tags = [...new Set(all.flatMap((node) => node.data.tags))];
 
-  return tags.map((tag) => ({
+  return Promise.all(tags.map(async (tag) => ({
     params: { tag },
-    props: { nodes: all.filter((node) => node.data.tags.includes(tag)) },
-  }));
+    props: { nodes: await getNodesByTag(tag, all) },
+  })));
 }
 
 const { tag } = Astro.params;

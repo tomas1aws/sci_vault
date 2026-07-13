@@ -1,16 +1,14 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import NodeList from '../../../components/NodeList.astro';
-import { getVisibleNodes } from '../../../lib/content';
-import { sections, sectionForType } from '../../../lib/taxonomy';
+import { getNodesBySection } from '../../../lib/content';
+import { sections, type SectionKey } from '../../../lib/taxonomy';
 
 export async function getStaticPaths() {
-  const all = await getVisibleNodes();
-
-  return Object.keys(sections).map((section) => ({
+  return Promise.all((Object.keys(sections) as SectionKey[]).map(async (section) => ({
     params: { section },
-    props: { nodes: all.filter((node) => sectionForType(node.data.type) === section) },
-  }));
+    props: { nodes: await getNodesBySection(section) },
+  })));
 }
 
 const { section } = Astro.params;

@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro'; import Relations from '../../components/Relations.astro';
-import { getCollection } from 'astro:content'; import { explicitRelated, suggestedRelated } from '../../lib/content';
-import { archiveCode, isPublished, nodeUrl, sectionForType, typeLabels } from '../../lib/taxonomy';
-export async function getStaticPaths(){ const all=(await getCollection('nodes')).filter(isPublished); return all.map(node=>({params:{slug:node.data.slug},props:{node}})); }
-const { node } = Astro.props; const all=(await getCollection('nodes')).filter(isPublished); const { Content } = await node.render(); const explicit=explicitRelated(node, all); const suggested=suggestedRelated(node, all);
+import { explicitRelated, getVisibleNodes, suggestedRelated } from '../../lib/content';
+import { archiveCode, sectionForType, typeLabels } from '../../lib/taxonomy';
+export async function getStaticPaths(){ const all=await getVisibleNodes(); return all.map(node=>({params:{slug:node.data.slug},props:{node}})); }
+const { node } = Astro.props; const all=await getVisibleNodes(); const { Content } = await node.render(); const explicit=explicitRelated(node, all); const suggested=suggestedRelated(node, all);
 ---
 <Base title={`${node.data.title} · SciFi Vault`} description={node.data.description}><nav class="crumbs"><a href="/archivo">Archivo</a> / <a href={`/archivo/seccion/${sectionForType(node.data.type)}`}>{sectionForType(node.data.type)}</a> / {node.data.title}</nav>{node.data.status==='draft' && <div class="draft">BORRADOR visible solo en desarrollo local</div>}<article class="node-layout"><div><p class="code">{archiveCode(node)}</p><h1>{node.data.title}</h1><p class="prose">{node.data.description}</p><div class="meta">{typeLabels[node.data.type]} · {sectionForType(node.data.type)}{node.data.year ? ` · ${node.data.year}` : ''}{node.data.spoilerLevel ? ` · spoilers: ${node.data.spoilerLevel}` : ''}</div><div class="tags">{node.data.tags.map((t:string)=><a class="tag" href={`/archivo/etiqueta/${t}`}>#{t}</a>)}</div><div class="prose"><Content /></div></div><aside class="side"><Relations explicit={explicit} suggested={suggested}/><h2>Caminos</h2><a class="relation" href={`/archivo/tipo/${node.data.type}`}>Mismo tipo<small>{typeLabels[node.data.type]}</small></a><a class="relation" href={`/archivo/seccion/${sectionForType(node.data.type)}`}>Misma sección<small>{sectionForType(node.data.type)}</small></a></aside></article></Base>

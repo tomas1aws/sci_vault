@@ -1,0 +1,54 @@
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+
+const dist = 'dist';
+const nodesDir = 'src/content/nodes';
+
+function frontmatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  return Object.fromEntries(match[1].split('\n').map((line) => {
+    const i = line.indexOf(':');
+    if (i === -1) return null;
+    return [line.slice(0, i).trim(), line.slice(i + 1).trim().replace(/^['"]|['"]$/g, '')];
+  }).filter(Boolean));
+}
+
+async function readHtml(...parts) {
+  return readFile(path.join(dist, ...parts), 'utf8');
+}
+
+const files = (await readdir(nodesDir)).filter((file) => file.endsWith('.md'));
+const nodes = [];
+for (const file of files) {
+  const data = frontmatter(await readFile(path.join(nodesDir, file), 'utf8'));
+  nodes.push({ file, ...data });
+}
+const published = nodes.filter((node) => node.status === 'published');
+const drafts = nodes.filter((node) => node.status === 'draft');
+
+if (published.length === 0) throw new Error('No hay nodos publicados para comprobar.');
+
+const checks = [
+  ['index.html', await readHtml('index.html'), ['Nodos destacados', published[0].title]],
+  ['archivo/index.html', await readHtml('archivo', 'index.html'), published.map((node) => node.title)],
+  ['archivo/seccion/obras/index.html', await readHtml('archivo', 'seccion', 'obras', 'index.html'), ['Back to the Future', 'Blade Runner', 'Fundación']],
+  ['archivo/seccion/personas/index.html', await readHtml('archivo', 'seccion', 'personas', 'index.html'), ['Isaac Asimov', 'Philip K. Dick', 'Robert Zemeckis']],
+  ['buscar/index.html', await readHtml('buscar', 'index.html'), published.map((node) => node.slug)],
+];
+
+for (const [label, html, needles] of checks) {
+  for (const needle of needles) {
+    if (!html.includes(needle)) throw new Error(`${label} no contiene ${needle}`);
+  }
+  for (const draft of drafts) {
+    if (html.includes(draft.title) || html.includes(draft.slug)) throw new Error(`${label} contiene el borrador ${draft.slug}`);
+  }
+}
+
+for (const node of published) {
+  const html = await readHtml('archivo', node.slug, 'index.html');
+  if (!html.includes(node.title)) throw new Error(`La página individual de ${node.slug} no contiene su título.`);
+}
+
+console.log(`Comprobación OK: ${published.length} nodos publicados; borradores excluidos: ${drafts.map((node) => node.file).join(', ') || 'ninguno'}.`);
