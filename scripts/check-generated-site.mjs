@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const dist = 'dist';
@@ -29,12 +29,12 @@ const drafts = nodes.filter((node) => node.status === 'draft');
 
 if (published.length === 0) throw new Error('No hay nodos publicados para comprobar.');
 
+const archiveHtml = await readHtml('archivo', 'index.html');
 const checks = [
   ['index.html', await readHtml('index.html'), ['Nodos destacados', published[0].title]],
-  ['archivo/index.html', await readHtml('archivo', 'index.html'), published.map((node) => node.title)],
+  ['archivo/index.html', archiveHtml, [...published.map((node) => node.title), 'Buscar en el archivo', 'No se encontraron nodos para esta búsqueda.']],
   ['archivo/seccion/obras/index.html', await readHtml('archivo', 'seccion', 'obras', 'index.html'), ['Back to the Future', 'Blade Runner', 'Fundación']],
   ['archivo/seccion/personas/index.html', await readHtml('archivo', 'seccion', 'personas', 'index.html'), ['Isaac Asimov', 'Philip K. Dick', 'Robert Zemeckis']],
-  ['buscar/index.html', await readHtml('buscar', 'index.html'), published.map((node) => node.slug)],
 ];
 
 for (const [label, html, needles] of checks) {
@@ -44,6 +44,17 @@ for (const [label, html, needles] of checks) {
   for (const draft of drafts) {
     if (html.includes(draft.title) || html.includes(draft.slug)) throw new Error(`${label} contiene el borrador ${draft.slug}`);
   }
+}
+
+try {
+  await access(path.join(dist, 'buscar', 'index.html'));
+  throw new Error('La página independiente /buscar todavía fue generada.');
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
+
+if (archiveHtml.includes('href="/buscar"') || archiveHtml.includes('Buscador local')) {
+  throw new Error('El archivo conserva referencias a la página independiente de búsqueda.');
 }
 
 for (const node of published) {
