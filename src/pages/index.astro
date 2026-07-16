@@ -1,10 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import NodeList from '../components/NodeList.astro';
-import { getFeaturedNodes, getSuggestedConnections, getVisibleNodes } from '../lib/content';
-import { nodeUrl, sections } from '../lib/taxonomy';
+import { getFeaturedNodes, getVisibleNodes } from '../lib/content';
+import { sections } from '../lib/taxonomy';
 const nodes = await getVisibleNodes();
 const featured = getFeaturedNodes(nodes);
-const suggestedConnections = getSuggestedConnections(nodes);
 ---
-<Base title="SciFi Vault · Archivo de ciencia ficción"><section class="hero"><p class="kicker">Archivo digital interconectado</p><h1>SciFi Vault</h1><p class="prose">Un mapa estático de ciencia ficción, cultura geek e ideas especulativas. Cada página es un nodo: una obra, persona, concepto o ensayo con enlaces para saltar lateralmente por el archivo.</p><p><a class="pill" href="/archivo">Entrar al archivo completo</a></p></section><h2>Nodos destacados</h2><NodeList nodes={featured}/><h2>Caminos de exploración</h2><div class="grid">{Object.entries(sections).map(([key,s])=><a class="relation" href={`/archivo/seccion/${key}`}><strong>{s.title}</strong><small>{s.description}</small></a>)}</div><h2>Conexiones sugeridas</h2>{suggestedConnections.length ? <div class="grid">{suggestedConnections.map(({node, related})=><a class="relation" href={nodeUrl(related.data.slug)}><strong>{node.data.title} → {related.data.title}</strong><small>{node.data.tags.filter((tag:string)=>related.data.tags.includes(tag)).slice(0,3).join(' · ')}</small></a>)}</div> : <p class="prose">Las conexiones aparecerán cuando existan etiquetas compartidas entre nodos publicados.</p>}</Base>
+<Base title="SciFi Vault · Archivo de ciencia ficción"><section class="hero"><p class="kicker">Archivo digital interconectado</p><h1>SciFi Vault</h1><p class="prose">Un mapa estático de ciencia ficción, cultura geek e ideas especulativas. Cada página es un nodo: una obra, persona, concepto o ensayo con enlaces para saltar lateralmente por el archivo.</p><p><a class="pill" href="/archivo">Entrar al archivo completo</a></p></section><h2>Nodos destacados</h2><NodeList nodes={featured}/><h2>Caminos de exploración</h2><div class="grid">{Object.entries(sections).map(([key,s])=><a class="relation" href={`/archivo/seccion/${key}`}><strong>{s.title}</strong><small>{s.description}</small></a>)}</div></Base>

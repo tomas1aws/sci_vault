@@ -63,13 +63,3 @@ export function getFeaturedNodes(nodes: Node[], limit = 4) {
   const source = featured.length ? featured : nodes;
   return sortNodes(source).slice(0, limit);
 }
-
-export function getSuggestedConnections(nodes: Node[], limit = 6) {
-  return nodes
-    .flatMap((node) => suggestedRelated(node, nodes, 3).map((related) => ({ node, related })))
-    .filter(({ node, related }, index, pairs) => {
-      const key = [node.data.slug, related.data.slug].sort().join('::');
-      return pairs.findIndex((pair) => [pair.node.data.slug, pair.related.data.slug].sort().join('::') === key) === index;
-    })
-    .slice(0, limit);
-}
