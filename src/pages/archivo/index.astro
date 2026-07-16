@@ -1,5 +1,109 @@
 ---
-import Base from '../../layouts/Base.astro'; import NodeList from '../../components/NodeList.astro'; import { getVisibleNodes } from '../../lib/content';
-const nodes = await getVisibleNodes(); const tags=[...new Set(nodes.flatMap(n=>n.data.tags))].sort(); const years=[...new Set(nodes.map(n=>n.data.year).filter(Boolean))].sort();
+import Base from '../../layouts/Base.astro';
+import NodeList from '../../components/NodeList.astro';
+import { getPublishedNodes } from '../../lib/content';
+import { sectionForType, typeLabels } from '../../lib/taxonomy';
+
+const nodes = await getPublishedNodes();
+const tags = [...new Set(nodes.flatMap((node) => node.data.tags))].sort();
+const years = [...new Set(nodes.map((node) => node.data.year).filter(Boolean))].sort();
+const searchData = nodes.map((node) => ({
+  slug: node.data.slug,
+  title: node.data.title,
+  description: node.data.description,
+  type: node.data.type,
+  typeLabel: typeLabels[node.data.type],
+  section: sectionForType(node.data.type),
+  tags: node.data.tags,
+  aliases: node.data.aliases ?? [],
+  year: node.data.year ? String(node.data.year) : '',
+}));
 ---
-<Base title="Archivo completo · SciFi Vault"><p class="kicker">Índice general</p><h1>Archivo completo</h1><p class="prose">Explorá por título, tipo, sección, etiqueta o año. El orden alfabético evita convertir el archivo en una cronología.</p><NodeList nodes={nodes}/><h2>Etiquetas</h2><div class="tags">{tags.map(t=><a class="tag" href={`/archivo/etiqueta/${t}`}>{t}</a>)}</div><h2>Años registrados</h2><p class="meta">{years.join(' · ')}</p></Base>
+<Base title="Archivo completo · SciFi Vault">
+  <p class="kicker">Índice general</p>
+  <h1>Archivo completo</h1>
+  <p class="prose">Explorá por título, tipo, sección, etiqueta o año. El orden alfabético evita convertir el archivo en una cronología.</p>
+
+  <form class="archive-search" role="search" data-archive-search>
+    <div class="archive-search__bar">
+      <label class="kicker" for="archive-search-input">Buscar en el archivo</label>
+      <div class="archive-search__controls">
+        <input
+          id="archive-search-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Buscar por título, alias, descripción, etiqueta o tipo…"
+          aria-describedby="archive-search-count archive-search-empty"
+        />
+        <button class="archive-search__clear" type="button" hidden>Limpiar</button>
+      </div>
+    </div>
+    <p id="archive-search-count" class="meta" aria-live="polite">{nodes.length} nodos</p>
+    <p id="archive-search-empty" class="archive-search__empty" hidden>No se encontraron nodos para esta búsqueda.</p>
+  </form>
+
+  <div id="archive-results" data-search-index={JSON.stringify(searchData)} data-archive-base="/archivo">
+    <NodeList nodes={nodes}/>
+  </div>
+
+  <h2>Etiquetas</h2>
+  <div class="tags">{tags.map((tag) => <a class="tag" href={`/archivo/etiqueta/${tag}`}>{tag}</a>)}</div>
+  <h2>Años registrados</h2>
+  <p class="meta">{years.join(' · ')}</p>
+
+  <script>
+    const form = document.querySelector('[data-archive-search]');
+    const input = document.getElementById('archive-search-input');
+    const clearButton = form?.querySelector('.archive-search__clear');
+    const count = document.getElementById('archive-search-count');
+    const empty = document.getElementById('archive-search-empty');
+    const results = document.getElementById('archive-results');
+    const items = [...document.querySelectorAll('#archive-results .index-list li')];
+    const index = JSON.parse(results?.dataset.searchIndex ?? '[]');
+
+    const normalize = (value) => String(value ?? '')
+      .toLocaleLowerCase('es')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    const searchable = index.map((node) => normalize([
+      node.title,
+      node.description,
+      node.type,
+      node.typeLabel,
+      node.section,
+      node.year,
+      ...(node.tags ?? []),
+      ...(node.aliases ?? []),
+    ].join(' ')));
+
+    function labelFor(total, term) {
+      if (term) return `${total} ${total === 1 ? 'resultado' : 'resultados'}`;
+      return `${total} ${total === 1 ? 'nodo' : 'nodos'}`;
+    }
+
+    function updateArchiveSearch() {
+      const term = normalize(input?.value.trim());
+      let visible = 0;
+
+      items.forEach((item, position) => {
+        const match = !term || searchable[position].includes(term);
+        item.hidden = !match;
+        if (match) visible += 1;
+      });
+
+      if (count) count.textContent = labelFor(visible, term);
+      if (empty) empty.hidden = visible > 0;
+      if (clearButton) clearButton.hidden = !term;
+    }
+
+    form?.addEventListener('submit', (event) => event.preventDefault());
+    input?.addEventListener('input', updateArchiveSearch);
+    clearButton?.addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+      updateArchiveSearch();
+    });
+    updateArchiveSearch();
+  </script>
+</Base>

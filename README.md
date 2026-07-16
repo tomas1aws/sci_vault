@@ -29,8 +29,7 @@ src/content/nodes/        Nodos Markdown/MDX
 src/content.config.ts     Esquema validado de metadatos
 src/lib/taxonomy.ts       Mapeo central de tipos a secciones
 src/lib/content.ts        Utilidades de nodos y relaciones
-src/pages/archivo/        Archivo, nodos, secciones, tipos y etiquetas
-src/pages/buscar.astro    Buscador local estático
+src/pages/archivo/        Archivo, nodos, secciones, tipos, etiquetas y buscador integrado
 scripts/validate-content.mjs Validación editorial adicional
 templates/node-template.md Plantilla para nuevos nodos
 ```
@@ -63,7 +62,7 @@ Estos enlaces no dependen de JavaScript, tienen estilos visibles de hover/focus 
 ## `draft` vs `published`
 
 - `draft`: visible durante desarrollo local para revisar el contenido, identificado con una marca de borrador.
-- `published`: incluido en builds de producción, archivo, RSS, sitemap y buscador.
+- `published`: incluido en builds de producción, archivo, RSS, sitemap y buscador integrado.
 
 La función `isPublished` filtra borradores cuando `import.meta.env.PROD` está activo.
 
