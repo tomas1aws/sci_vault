@@ -25,6 +25,5 @@ export function sectionForType(type: NodeType): SectionKey {
 }
 
 export function nodeUrl(slug: string) { return `/archivo/${slug}`; }
-export function archiveCode(node: Node) { return `${sectionForType(node.data.type).slice(0,3).toUpperCase()}-${node.data.type.slice(0,3).toUpperCase()}-${node.data.slug.slice(0,3).toUpperCase()}`; }
 
 export function sortNodes(nodes: Node[]) { return [...nodes].sort((a, b) => a.data.title.localeCompare(b.data.title, 'es')); }
