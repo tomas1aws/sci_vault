@@ -26,6 +26,7 @@ for (const file of files) {
 }
 const published = nodes.filter((node) => node.status === 'published');
 const drafts = nodes.filter((node) => node.status === 'draft');
+const classificationCode = /\b(?:OBR|PER|CON|HIS|ENS)-(?:MOV|SER|BOO|AUT|DIR|PER|CHA|CON|MOV|ESS|HIS|TEC|CUL)-[A-Z0-9]{3}\b/;
 
 if (published.length === 0) throw new Error('No hay nodos publicados para comprobar.');
 
@@ -38,6 +39,7 @@ const checks = [
 ];
 
 for (const [label, html, needles] of checks) {
+  if (classificationCode.test(html)) throw new Error(`${label} contiene un código de clasificación visible.`);
   for (const needle of needles) {
     if (!html.includes(needle)) throw new Error(`${label} no contiene ${needle}`);
   }
@@ -60,6 +62,7 @@ if (archiveHtml.includes('href="/buscar"') || archiveHtml.includes('Buscador loc
 for (const node of published) {
   const html = await readHtml('archivo', node.slug, 'index.html');
   if (!html.includes(node.title)) throw new Error(`La página individual de ${node.slug} no contiene su título.`);
+  if (classificationCode.test(html)) throw new Error(`La página individual de ${node.slug} contiene un código de clasificación visible.`);
 }
 
 console.log(`Comprobación OK: ${published.length} nodos publicados; borradores excluidos: ${drafts.map((node) => node.file).join(', ') || 'ninguno'}.`);

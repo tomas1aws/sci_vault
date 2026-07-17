@@ -92,4 +92,4 @@ El build de Astro valida además el esquema definido en `src/content.config.ts`.
 
 ## Decisiones de diseño
 
-La interfaz evita el patrón de blog cronológico: prioriza índices, códigos de archivo, metadatos discretos, breadcrumbs y referencias laterales. La jerarquía ordena el contenido; las relaciones y etiquetas permiten exploración lateral.
+La interfaz evita el patrón de blog cronológico: prioriza índices, metadatos discretos, breadcrumbs y referencias laterales. La jerarquía ordena el contenido; las relaciones y etiquetas permiten exploración lateral.
